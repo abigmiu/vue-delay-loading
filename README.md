@@ -1,16 +1,38 @@
-# Vue 3 + TypeScript + Vite
+用途： 在 x 秒后显示 loading
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+比如 x = 300
 
-## Recommended IDE Setup
+现在请求一个接口。 用时500ms
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
+就会在 300 - 500 这个时间段显示 loading
 
-## Type Support For `.vue` Imports in TS
+如果用时 200ms， 就不会显示 loading
 
-Since TypeScript cannot handle type information for `.vue` imports, they are shimmed to be a generic Vue component type by default. In most cases this is fine if you don't really care about component prop types outside of templates. However, if you wish to get actual prop types in `.vue` imports (for example to get props validation when using manual `h(...)` calls), you can enable Volar's Take Over mode by following these steps:
+用法：
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+const loading = ref(true)
+setTimeout(() => {
+    loading.value = false
+}, 5000);
+</script>
+<template>
+  <div>
+    <div v-loading:2000="loading"></div>
+  </div>
+</template>
+```
 
-1. Run `Extensions: Show Built-in Extensions` from VS Code's command palette, look for `TypeScript and JavaScript Language Features`, then right click and select `Disable (Workspace)`. By default, Take Over mode will enable itself if the default TypeScript extension is disabled.
-2. Reload the VS Code window by running `Developer: Reload Window` from the command palette.
+核心： `setTimeOut`
+在 loading.ts 里面声明了一个 State 类。用来处理是否显示
 
-You can learn more about Take Over mode [here](https://github.com/johnsoncodehk/volar/discussions/471).
+在指令 mounted 的时候将 new State() 挂载到 el 上。
+当 update 的时候。 在 State 的 toggleStatus 判断是否显示 loading 效果
+
+
+还有一种延迟显示 loading 的方法就是在请求的时候自己处理是否显示。不过这样每一次请求都需要处理。 所以诞生了这个 demo。
+
+推荐使用 `VueRequest` [https://github.com/AttoJS/vue-request](https://github.com/AttoJS/vue-request)
+
+延迟 loading 效果演示 [https://next.attojs.org/guide/documentation/loadingDelay.html#loadingdelay](https://next.attojs.org/guide/documentation/loadingDelay.html#loadingdelay)

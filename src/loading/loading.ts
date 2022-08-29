@@ -3,56 +3,43 @@ import LoadingCmp from './loading.vue';
 
 const Loading = createApp(LoadingCmp)
 
+
+function start(el: HTMLElement & { instance: any }) {
+    const style = getComputedStyle(el);
+    if (["absolute", "fixed", "relative"].indexOf(style.position) === -1) {
+        el.style.position = 'relative'
+    }
+    el.appendChild(el.instance.$el);
+}
+
+function done(el: HTMLElement & { instance: any }) {
+    el.removeChild(el.instance.$el);
+}
 class State {
-    preTime: number;
     oldValue: boolean;
-    value: boolean;
     duration: number;
     timer: number | null;
 
-    constructor(duration = 2000) {
-        this.preTime = new Date().getTime();
+    constructor(duration = 300) {
         this.oldValue = false;
-        this.value = false;
         this.duration = duration;
         this.timer = null;
-    }
-
-    getIsOver() {
-        const current = new Date().getTime()
-        const result = current - this.preTime > this.duration
-        this.preTime = current;
-        return result
     }
 
     toggleStatus(value: boolean, el: HTMLElement & { instance: any }) {
         if (value) {
             this.timer = window.setTimeout(() => {
-                this.start(el);
-                console.log(new Date());
+                start(el);
                 clearTimeout(this.timer as number);
             }, this.duration)
         } else {
             if (this.timer) {
                 clearTimeout(this.timer);
             }
-            this.done(el);
+            if (!this.oldValue) return
+            done(el);
         }
         this.oldValue = value;
-    }
-
-    start(el: HTMLElement & { instance: any }) {
-        const style = getComputedStyle(el);
-        if (["absolute", "fixed", "relative"].indexOf(style.position) === -1) {
-            el.style.position = 'relative'
-        }
-        el.appendChild(el.instance.$el);
-    }
-
-    done(el: HTMLElement & { instance: any }) {
-        if (!this.oldValue) return
-
-        el.removeChild(el.instance.$el);
     }
 }
 
@@ -71,9 +58,7 @@ const direct: Directive = {
 
     },
     updated(el, binding) {
-        console.log(binding.value, binding.oldValue);
         if (binding.oldValue !== binding.value) {
-            console.log(new Date())
             el.loadingState.toggleStatus(binding.value, el)
         }
 
